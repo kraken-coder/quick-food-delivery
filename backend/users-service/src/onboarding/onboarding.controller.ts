@@ -6,10 +6,13 @@ import {
   Put,
   Param,
   Delete,
+  Res,
 } from '@nestjs/common';
+import { PhoneDto } from './dto/phoneVerification.dto';
 import { OnboardingService } from './onboarding.service';
 import { CreateOnboardingDto } from './dto/create-onboarding.dto';
 import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
+import { Response } from 'express';
 import { User } from './entities/User.entity';
 
 @Controller('onboarding')
@@ -28,6 +31,14 @@ export class OnboardingController {
     return await this.onboardingService.findAll();
   }
 
+  @Post('verify')
+  async verifyPhone(
+    @Body() body: PhoneDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.onboardingService.verifyPhone(body, res);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.onboardingService.findOne(+id);
@@ -41,8 +52,8 @@ export class OnboardingController {
     return this.onboardingService.update(+id, updateOnboardingDto);
   }
 
-  @Delete(':id')
+  @Delete('user/:id')
   remove(@Param('id') id: string) {
-    return this.onboardingService.remove(+id);
+    return this.onboardingService.remove(id);
   }
 }

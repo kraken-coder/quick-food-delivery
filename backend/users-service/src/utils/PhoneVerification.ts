@@ -17,6 +17,17 @@ class Verification {
       .services(sid)
       .verifications.create({ to: phone, channel: 'sms' });
   }
+
+  async verify(sid: string, code: string, phone: string): Promise<string> {
+    try {
+      const res = await this.twilio.verify
+        .services(sid)
+        .verificationChecks.create({ code, to: phone });
+      return res?.status;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
 
 export default Verification;
