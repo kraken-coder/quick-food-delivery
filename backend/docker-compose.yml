@@ -1,0 +1,68 @@
+version: '3'
+services:
+  users-service:
+    image: users-service
+    command: bash -c "/wait-for-it.sh --timeout=0 users-service-db:5432 && npm run start:dev"
+    build: ./users-service
+    env_file: ./users-service/.env
+    ports:
+      - '3001:3001'
+    networks:
+      - quick_food
+    volumes:
+      - ./users-service/:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - users-service-db
+  listing-service:
+    image: listing-service
+    command: bash -c "/wait-for-it.sh --timeout=0 listing-service-db:5432 && npm run start:dev"
+    build: ./listing-service
+    env_file: ./listing-service/.env
+    ports:
+      - '3002:3002'
+    networks:
+      - quick_food
+    volumes:
+      - ./listing-service/:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - listing-service-db
+  listing-service-db:
+    image: postgres:13
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - ${LISTINGS_DB_PORT}:5432
+    environment:
+      - POSTGRES_DB=${LISTINGS_DB_NAME}
+      - POSTGRES_PASSWORD=${LISTINGS_DB_PASSWORD}
+      - POSTGRES_USER=${LISTINGS_DB_USER}
+    networks:
+      - quick_food
+    volumes:
+      - listing-data:/var/lib/postgresql/data
+  users-service-db:
+    image: postgres:13
+    env_file:
+      - ./.env
+    ports:
+      - ${USERS_DB_PORT}:5432
+    restart: always
+    environment:
+      - POSTGRES_DB=${USERS_DB_NAME}
+      - POSTGRES_PASSWORD=${USERS_DB_PASSWORD}
+      - POSTGRES_USER=${USERS_DB_USER}
+    networks:
+      - quick_food
+    volumes:
+      - users-data:/var/lib/postgresql/data
+networks:
+  quick_food:
+    driver: bridge
+volumes:
+  listing-data:
+    driver: local
+  users-data:
+    driver: local
